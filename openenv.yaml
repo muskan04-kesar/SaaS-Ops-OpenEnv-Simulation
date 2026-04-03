@@ -1,0 +1,37 @@
+name: "saas-ops-simulation"
+version: "1.0.0"
+description: "A B2B SaaS Operations simulation open environment for testing AI reasoning, resource allocation, and technical debt management."
+entrypoint:
+  type: "rest_api"
+  port: 8000
+  start_command: "uvicorn server:app --host 0.0.0.0 --port 8000"
+
+# The Action space schema for agents knowing what actions they can take
+action_space:
+  type: "json"
+  schema:
+    type: "object"
+    properties:
+      action_type:
+        type: "string"
+        enum: ["hire_dev", "pay_debt", "marketing_push"]
+      amount:
+        type: "number"
+        description: "Monetary amount for marketing or debt payment."
+      count:
+        type: "integer"
+        description: "Number of developers to hire."
+
+# The three deterministic scenarios
+tasks:
+  - id: "easy"
+    name: "Tech Debt Cleanup"
+    description: "Starting with aggressive tech debt (80%) and a fixed 20k budget, reduce tech debt down to 40% before bankrupting."
+  
+  - id: "medium"
+    name: "Revenue Generation"
+    description: "Starting with a healthy codebase but 0 MRR, navigate marketing scales to reach Rs. 10,000 monthly revenue."
+  
+  - id: "hard"
+    name: "The Pivot Survival"
+    description: "Survive exactly 12 months with a volatile codebase and launch enough new features (12 needed) without hitting zero cash."
