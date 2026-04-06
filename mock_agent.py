@@ -47,7 +47,7 @@ def run_mock_agent(task_level):
         total_reward += reward
         
         print(f"  --> Observation: Cash={obs['cash']:.2f}, Rev={obs['monthly_revenue']:.2f}, Debt={obs['tech_debt']:.2f}, Devs={obs['devs']}, Features={obs['features_completed']}")
-        print(f"  --> Grader Message: {info['message']}")
+        print(f"  --> Grader Message: {info['message'].replace('≤', '<=')}")
         print(f"  --> Step Reward: {reward}")
         
     print(f"\n*** Episode Finished for {task_level.title()}. Total Reward: {total_reward:.2f} ***\n")
