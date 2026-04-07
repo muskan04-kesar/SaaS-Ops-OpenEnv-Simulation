@@ -129,3 +129,11 @@ def get_state():
     if not env_state:
         raise HTTPException(status_code=400, detail="Environment not initialized.")
     return enrich_observation_with_ai(env_state.get_observation()).model_dump()
+
+def main():
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", port=int(os.getenv("PORT", 8000)), reload=False)
+
+if __name__ == "__main__":
+    main()
+
