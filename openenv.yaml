@@ -4,7 +4,7 @@ description: "A B2B SaaS Operations simulation open environment for testing AI r
 entrypoint:
   type: "rest_api"
   port: 7860
-  start_command: "uvicorn server:app --host 0.0.0.0 --port 7860"
+  start_command: "uvicorn server.app:app --host 0.0.0.0 --port 7860"
 
 # The Action space schema for agents knowing what actions they can take
 action_space:

@@ -10,7 +10,7 @@ Setup:
     4. export GROQ_API_KEY=your_key_here
 
 Run (server must be running first):
-    uvicorn server:app --host 0.0.0.0 --port 8000
+    uvicorn server.app:app --host 0.0.0.0 --port 8000
     python baseline_agent.py
 """
 

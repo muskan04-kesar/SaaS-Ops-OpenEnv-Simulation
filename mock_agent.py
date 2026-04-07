@@ -1,4 +1,4 @@
-from server import reset, step
+from server.app import reset, step
 from models import Action
 import random
 

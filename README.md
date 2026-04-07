@@ -27,7 +27,7 @@ SaaS-Ops-OpenEnv-Simulation/
 ├── core.py            # Simulation engine — state management, math, and stochastic events
 ├── models.py          # Pydantic schemas — Action and Observation models
 ├── tasks.py           # Task graders — Level-specific logic (Easy, Medium, Hard)
-├── server.py          # FastAPI application — API endpoints and static file serving
+├── server/app.py      # FastAPI application — API endpoints and static file serving
 ├── index.html         # Modern UI dashboard (Glassmorphism + Three.js)
 ├── baseline_agent.py  # LLM-powered baseline (Claude/Groq supported)
 ├── mock_agent.py      # Random action agent for smoke-testing
@@ -97,7 +97,7 @@ pip install -r requirements.txt
 
 ### 2. Start the Environment
 ```bash
-uvicorn server:app --host 0.0.0.0 --port 7860 --reload
+uvicorn server.app:app --host 0.0.0.0 --port 7860 --reload
 ```
 - **Dashboard**: Open `http://localhost:7860` in your browser.
 - **API Docs**: Visit `http://localhost:7860/docs`.
