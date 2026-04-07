@@ -146,3 +146,13 @@ To deploy on Hugging Face:
 
 ---
 
+## 📸 Screenshots
+
+![Dashboard Preview](assets/dashboard.png)
+*Modern Glassmorphic Dashboard showcasing simulation state.*
+
+![Simulation Success](assets/success.png)
+*AI Agent successfully navigating the 'Hard' task level.*
+
+---
+

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import json
 from groq import Groq
+from openai import OpenAI
 from models import Action
 from core import SaaSState
 from tasks import EasyTask, MediumTask, HardTask
@@ -21,17 +22,27 @@ app.add_middleware(
 
 # AI Setup
 GROQ_KEY = os.getenv("GROQ_API_KEY")
-groq_client = Groq(api_key=GROQ_KEY) if GROQ_KEY else None
+HF_TOKEN = os.getenv("HF_TOKEN")
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.groq.com/openai/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.1-8b-instant")
+
+# Priority: HF_TOKEN (OpenAI Client) > GROQ_KEY (Groq Client)
+if HF_TOKEN:
+    ai_client = OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
+elif GROQ_KEY:
+    ai_client = Groq(api_key=GROQ_KEY)
+else:
+    ai_client = None
 
 env_state = None
 current_task = None
 
 def enrich_observation_with_ai(obs):
     """
-    If a Groq key is found, we replace the hardcoded advice 
+    If an AI client is found, we replace the hardcoded advice 
     with real AI-generated strategy recommendations.
     """
-    if not groq_client:
+    if not ai_client:
         return obs
 
     try:
@@ -48,10 +59,10 @@ def enrich_observation_with_ai(obs):
         }}
         """
         
-        chat_completion = groq_client.chat.completions.create(
+        chat_completion = ai_client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama-3.1-8b-instant",
-            response_format={"type": "json_object"},
+            model=MODEL_NAME,
+            response_format={"type": "json_object"} if "llama-3" in MODEL_NAME.lower() else None,
             max_tokens=256
         )
         
