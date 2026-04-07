@@ -12,120 +12,137 @@ tags:
   - saas
 ---
 
-# SaaS-Ops OpenEnv Simulation
+# 🚀 SaaS-Ops OpenEnv Simulation
 
-A B2B SaaS operations simulator built for the OpenEnv specification. An AI agent acts as
-the startup COO — balancing feature development, marketing investment, and technical debt
-across three increasingly difficult scenarios.
+A B2B SaaS operations simulator built for the OpenEnv specification. An AI agent acts as the startup COO — balancing feature development, marketing investment, and technical debt across three increasingly difficult scenarios.
 
-## Architecture
+This project includes a **FastAPI backend** that provides a Farama-gym style environment via REST API and a **stunning Glassmorphic UI** to visualize the simulation in real-time.
 
-```
-saas-ops/
-├── models.py          # Pydantic schemas — Action, Observation, DebtDetail
-├── core.py            # Math engine — SaaSState, step(), stochastic events
-├── tasks.py           # Task graders — EasyTask, MediumTask, HardTask
-├── server.py          # FastAPI app — /reset, /step, /state
-├── baseline_agent.py  # LLM-powered baseline (Claude Haiku)
-├── mock_agent.py      # Random agent for smoke-testing
-├── openenv.yaml       # OpenEnv manifest
+---
+
+## 🏗️ Architecture
+
+```text
+SaaS-Ops-OpenEnv-Simulation/
+├── core.py            # Simulation engine — state management, math, and stochastic events
+├── models.py          # Pydantic schemas — Action and Observation models
+├── tasks.py           # Task graders — Level-specific logic (Easy, Medium, Hard)
+├── server.py          # FastAPI application — API endpoints and static file serving
+├── index.html         # Modern UI dashboard (Glassmorphism + Three.js)
+├── baseline_agent.py  # LLM-powered baseline (Claude/Groq supported)
+├── mock_agent.py      # Random action agent for smoke-testing
+├── openenv.yaml       # OpenEnv manifest for multi-agent frameworks
 ├── requirements.txt   # Python dependencies
-└── Dockerfile         # Container definition
+└── Dockerfile         # Optimized container definition for Hugging Face Spaces
 ```
 
-## Action Space
+---
 
-| Field         | Type    | Description                                      |
-|---------------|---------|--------------------------------------------------|
-| `action_type` | string  | `"hire_dev"`, `"pay_debt"`, or `"marketing_push"` |
-| `amount`      | float   | Rs. amount for `pay_debt` or `marketing_push`    |
-| `count`       | integer | Number of devs to hire (for `hire_dev`)          |
+## 🕹️ Environment Specification
 
-## Observation Space
+### 📥 Observation Space
+The environment provides a JSON object containing the current health of the startup:
 
-| Field                | Type    | Description                                  |
-|----------------------|---------|----------------------------------------------|
-| `cash`               | float   | Current cash in Rs.                          |
-| `devs`               | int     | Active developers                            |
-| `features_completed` | int     | Cumulative features shipped                  |
-| `monthly_revenue`    | float   | Current MRR in Rs.                           |
-| `tech_debt`          | float   | Tech debt score 0.0 (clean) – 1.0 (critical) |
-| `tech_debt_details`  | object  | Reasoning, impact, and recommendation        |
-| `current_month`      | int     | Month number (1-indexed after first step)    |
-| `is_bankrupt`        | bool    | True if cash ≤ 0                             |
-| `event_message`      | string? | Stochastic event description, or null        |
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `cash` | `float` | Current cash balance in Rs. |
+| `devs` | `int` | Number of active full-time developers. |
+| `features_completed`| `int` | Cumulative number of pivot features shipped. |
+| `monthly_revenue` | `float` | Current Monthly Recurring Revenue (MRR). |
+| `tech_debt` | `float` | Tech debt score (0.0 to 1.0). High debt kills productivity. |
+| `tech_debt_details` | `object`| Rich context for LLMs: `{reasoning, impact, recommendation}`. |
+| `current_month` | `int` | Simulation step (1-12). |
+| `is_bankrupt` | `bool` | Terminal flag if cash hits zero. |
+| `event_message` | `str` | Description of any stochastic event triggered this month. |
 
-## Tasks
+### 📤 Action Space
+Agents must submit one action per month:
 
-### Easy — Tech Debt Cleanup
-- **Start**: Rs.20,000 cash, 80% tech debt, 2 devs
-- **Goal**: Reduce tech debt to ≤ 40% before going bankrupt
-- **Reward**: Partial progress signal proportional to debt reduction each step
+| Action Type | Parameters | Description |
+| :--- | :--- | :--- |
+| `hire_dev` | `count: int` | Hire 1-5 developers. Upfront cost + monthly salary. |
+| `pay_debt` | `amount: float`| Invest cash to refactor code and reduce tech debt. |
+| `marketing_push` | `amount: float`| Spend on ads/sales to boost MRR temporarily. |
 
-### Medium — Revenue Generation
-- **Start**: Rs.50,000 cash, 10% tech debt, 1 dev, Rs.0 MRR
-- **Goal**: Reach Rs.10,000 Monthly Recurring Revenue
-- **Reward**: `current_revenue / 10,000` each step (capped at 1.0)
+---
 
-### Hard — The Pivot Survival
-- **Start**: Rs.30,000 cash, 40% tech debt, 3 devs, Rs.2,000 MRR
-- **Goal**: Survive 12 months AND ship at least 12 pivot features
-- **Reward**: Combined survival + feature progress signal each step
+## 🏆 Simulation Tasks
 
-## Stochastic Events (15% chance per month)
+| Level | Goal | Initial State |
+| :--- | :--- | :--- |
+| **Easy** | Clean up Tech Debt | Rs. 20k, 80% Debt, 2 Devs. Goal: Debt ≤ 40%. |
+| **Medium** | Growth & Revenue | Rs. 50k, 10% Debt, 1 Dev. Goal: Rs. 10k MRR. |
+| **Hard** | Survival (The Pivot) | Rs. 30k, 40% Debt, 3 Devs. Goal: 12 Pivots + 1yr survival. |
 
-| Event              | Effect                                    |
-|--------------------|-------------------------------------------|
-| Key dev quit       | −1 dev, +5% debt                          |
-| Viral spike        | +Rs.3,000 revenue, +3% debt (load rush)   |
-| Server outage      | −Rs.2,000 cash, −Rs.1,500 revenue         |
-| Investor interest  | +Rs.5,000 cash                            |
-| Bug flood          | −Rs.2,000 revenue, +8% debt               |
+---
 
-## Running Locally
+## 🎲 Stochastic Events (15% Prob/Month)
+Real-world chaos included:
+- **Key Dev Quits**: -1 Dev, +5% Tech Debt.
+- **Viral Spike**: +Rs. 3k Revenue, +3% Load Debt.
+- **Server Outage**: -Rs. 2k Cash, -Rs. 1.5k Revenue.
+- **Investor Interest**: Capital injection (+Rs. 5k).
+- **Bug Flood**: -Rs. 2k Revenue, +8% Debt.
 
+---
+
+## 🛠️ Setup & Running Locally
+
+### 1. Installation
 ```bash
+git clone https://github.com/your-username/SaaS-Ops-OpenEnv-Simulation.git
+cd SaaS-Ops-OpenEnv-Simulation
 pip install -r requirements.txt
-uvicorn server:app --host 0.0.0.0 --port 8000
 ```
 
-Run the random smoke-test agent:
+### 2. Start the Environment
+```bash
+uvicorn server:app --host 0.0.0.0 --port 7860 --reload
+```
+- **Dashboard**: Open `http://localhost:7860` in your browser.
+- **API Docs**: Visit `http://localhost:7860/docs`.
+
+### 3. Run Agents
+**Smoke Test (Random):**
 ```bash
 python mock_agent.py
 ```
 
-Run the LLM baseline agent (requires `ANTHROPIC_API_KEY`):
+**LLM Baseline (requires API key):**
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+# Set your environment variable
+export GROQ_API_KEY=your_key_here
 python baseline_agent.py
 ```
 
-## Docker / Hugging Face Deployment
+---
 
+## 🐳 Docker & Hugging Face Deployment
+
+This repository is pre-configured for **Hugging Face Spaces** using the Docker SDK.
+
+**Local Docker Build:**
 ```bash
-docker build -t saas-openenv .
-docker run -p 8000:8000 saas-openenv
+docker build -t saas-ops-sim .
+docker run -p 7860:7860 saas-ops-sim
 ```
 
-For Hugging Face Spaces, push this repo with the YAML front-matter above intact.
-The Space will detect `sdk: docker` and build from the `Dockerfile` automatically.
+To deploy on Hugging Face:
+1. Create a new **Space** on HF.
+2. Select **Docker** as the SDK.
+3. Push your code to the Space's repository.
+4. The simulation will automatically build and serve the UI at the Space URL.
 
-## API Reference
+---
 
-| Endpoint       | Method | Body / Params            | Description                      |
-|----------------|--------|--------------------------|----------------------------------|
-| `/reset`       | POST   | `?task_level=easy`       | Resets env, returns initial obs  |
-| `/step`        | POST   | `Action` JSON body       | Advances one month               |
-| `/state`       | GET    | —                        | Returns current observation      |
+## 🔌 API Reference
 
-### Example session
+| Endpoint | Method | Params | Description |
+| :--- | :--- | :--- | :--- |
+| `/` | `GET` | — | Serves the interactive UI dashboard. |
+| `/reset` | `POST` | `task_level: str` | Resets environment (easy/medium/hard). |
+| `/step` | `POST` | `Action` JSON | Advances simulation by one month. |
+| `/state` | `GET` | — | Returns current observation JSON. |
 
-```bash
-# Reset to medium task
-curl -X POST "http://localhost:8000/reset?task_level=medium"
+---
 
-# Take a marketing action
-curl -X POST "http://localhost:8000/step" \
-  -H "Content-Type: application/json" \
-  -d '{"action_type": "marketing_push", "amount": 5000}'
-```
