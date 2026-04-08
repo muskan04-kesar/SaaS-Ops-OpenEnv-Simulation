@@ -130,8 +130,9 @@ async def run_task(task_level: str, max_steps: int = 12):
                     break
             
             # Simple score normalization (example: sum of rewards capped at 1.0)
+            # Clamped strictly between 0.01 and 0.99 to pass hackathon validation
             total_reward = sum(rewards)
-            score = max(0.0, min(1.0, total_reward / 10.0)) 
+            score = max(0.01, min(0.99, total_reward / 10.0)) 
             success = score >= 0.5 or (not obs['is_bankrupt'] and task_level == 'easy' and obs['tech_debt'] <= 0.4)
 
     except Exception as e:

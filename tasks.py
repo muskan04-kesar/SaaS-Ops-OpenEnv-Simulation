@@ -27,13 +27,14 @@ class EasyTask(TaskDefinition):
     def evaluate(self, state, env_done: bool):
         # --- Success ---
         if state.tech_debt <= self.TARGET_DEBT:
-            return 1.0, True, "Task Success: Tech debt cleaned up to 40%. Codebase is healthy!"
+            return 0.99, True, "Task Success: Tech debt cleaned up to 40%. Codebase is healthy!"
 
         # --- Bankruptcy ---
         if env_done:
             # Still give partial credit for how far they got
             progress = max(0.0, (self.INITIAL_DEBT - state.tech_debt) / (self.INITIAL_DEBT - self.TARGET_DEBT))
-            return round(progress * 0.5, 3), True, (
+            reward = max(0.01, round(progress * 0.5, 3))
+            return reward, True, (
                 f"Task Failed: Bankrupt with debt still at {state.tech_debt * 100:.0f}%. "
                 f"Partial progress: {progress * 100:.0f}%."
             )
@@ -41,7 +42,7 @@ class EasyTask(TaskDefinition):
         # --- Partial progress signal (every step) ---
         # Scales from 0.0 (debt still at 80%) to just under 1.0 (debt near 40%)
         progress = max(0.0, (self.INITIAL_DEBT - state.tech_debt) / (self.INITIAL_DEBT - self.TARGET_DEBT))
-        partial_reward = round(progress * 0.8, 3)   # Cap at 0.8 so 1.0 is reserved for true success
+        partial_reward = max(0.01, round(progress * 0.8, 3))   # Cap at 0.8 so 0.99 is reserved for true success
         return partial_reward, False, (
             f"In progress: debt at {state.tech_debt * 100:.0f}% "
             f"(target ≤ 40%). Progress: {progress * 100:.0f}%."
@@ -64,7 +65,7 @@ class MediumTask(TaskDefinition):
     def evaluate(self, state, env_done: bool):
         # --- Success ---
         if state.monthly_revenue >= self.TARGET_REVENUE:
-            return 1.0, True, (
+            return 0.99, True, (
                 f"Task Success: Reached Rs.{state.monthly_revenue:,.0f} MRR. "
                 f"Product-market fit achieved!"
             )
@@ -72,7 +73,8 @@ class MediumTask(TaskDefinition):
         # --- Bankruptcy ---
         if env_done:
             progress = min(1.0, state.monthly_revenue / self.TARGET_REVENUE)
-            return round(progress * 0.5, 3), True, (
+            reward = max(0.01, round(progress * 0.5, 3))
+            return reward, True, (
                 f"Task Failed: Bankrupt at Rs.{state.monthly_revenue:,.0f} MRR "
                 f"({progress * 100:.0f}% of Rs.10,000 target)."
             )
@@ -80,7 +82,7 @@ class MediumTask(TaskDefinition):
         # --- Partial progress signal (every step) ---
         # score = current_revenue / target_revenue, capped at 1.0
         progress = min(1.0, state.monthly_revenue / self.TARGET_REVENUE)
-        partial_reward = round(progress * 0.8, 3)
+        partial_reward = max(0.01, round(progress * 0.8, 3))
         return partial_reward, False, (
             f"In progress: Rs.{state.monthly_revenue:,.0f} MRR "
             f"({progress * 100:.0f}% of Rs.10,000 target)."
@@ -111,13 +113,13 @@ class HardTask(TaskDefinition):
         # --- Full success: survived 12 months AND shipped 12 features ---
         if state.current_month >= self.TARGET_MONTHS and state.cash > 0:
             if state.features_completed >= self.TARGET_FEATURES:
-                return 1.0, True, (
+                return 0.99, True, (
                     f"Task Success: Survived 12 months and shipped "
                     f"{state.features_completed} pivot features. The startup lives!"
                 )
             else:
                 # Survived but didn't pivot enough
-                partial = round((feature_progress * 0.5), 3)
+                partial = max(0.01, round((feature_progress * 0.5), 3))
                 return partial, True, (
                     f"Task Failed: Survived 12 months but only shipped "
                     f"{state.features_completed}/{self.TARGET_FEATURES} pivot features. "
@@ -126,7 +128,7 @@ class HardTask(TaskDefinition):
 
         # --- Bankruptcy ---
         if env_done:
-            partial = round((month_progress + feature_progress) * 0.25, 3)
+            partial = max(0.01, round((month_progress + feature_progress) * 0.25, 3))
             return partial, True, (
                 f"Task Failed: Bankrupt at month {state.current_month}/12 "
                 f"with {state.features_completed}/{self.TARGET_FEATURES} features shipped. "
@@ -134,7 +136,7 @@ class HardTask(TaskDefinition):
             )
 
         # --- Partial progress signal (every step) ---
-        partial_reward = round((month_progress + feature_progress) * 0.4, 3)
+        partial_reward = max(0.01, round((month_progress + feature_progress) * 0.4, 3))
         return partial_reward, False, (
             f"In progress: Month {state.current_month}/{self.TARGET_MONTHS} | "
             f"Features {state.features_completed}/{self.TARGET_FEATURES} | "

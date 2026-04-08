@@ -147,7 +147,7 @@ class SaaSState:
         reward = 0.0
         if self.cash <= 0:
             done = True
-            reward = -1.0
+            reward = -0.5
             self.cash = 0
 
         return self.get_observation(), done, reward
