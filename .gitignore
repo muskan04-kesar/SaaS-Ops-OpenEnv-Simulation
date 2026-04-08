@@ -2,3 +2,4 @@
 *.pyc
 __pycache__/
 qa_*.py
+server_log.txt

@@ -27,7 +27,9 @@ SaaS-Ops-OpenEnv-Simulation/
 ├── core.py            # Simulation engine — state management, math, and stochastic events
 ├── models.py          # Pydantic schemas — Action and Observation models
 ├── tasks.py           # Task graders — Level-specific logic (Easy, Medium, Hard)
-├── server/app.py      # FastAPI application — API endpoints and static file serving
+├── server/            # Server module
+│   ├── __init__.py    # Module initializer
+│   └── app.py         # FastAPI application — API endpoints and static file serving
 ├── index.html         # Modern UI dashboard (Glassmorphism + Three.js)
 ├── baseline_agent.py  # LLM-powered baseline (Claude/Groq supported)
 ├── mock_agent.py      # Random action agent for smoke-testing
