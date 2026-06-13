@@ -1,17 +1,3 @@
----
-title: SaaS-Ops OpenEnv Simulation
-emoji: 📊
-colorFrom: blue
-colorTo: teal
-sdk: docker
-pinned: false
-tags:
-  - openenv
-  - simulation
-  - reinforcement-learning
-  - saas
----
-
 # 🚀 SaaS-Ops OpenEnv Simulation
 
 A B2B SaaS operations simulator built for the OpenEnv specification. An AI agent acts as the startup COO — balancing feature development, marketing investment, and technical debt across three increasingly difficult scenarios.
